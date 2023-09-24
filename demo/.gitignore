@@ -1,2 +1,3 @@
 sorted_output.csv
 temp_files/tmp*
+__pycache__
