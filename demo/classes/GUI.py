@@ -2,12 +2,14 @@ import os
 from PyQt5.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QPushButton, QFileDialog, QLabel, QProgressBar, QLineEdit, QComboBox
 from PyQt5.QtGui import QFont, QIcon
 from classes.SortThread import SortThread
+import time
 
 class ExternalSortApp(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.initUI()
+        self.start_time = time.time()
 
     def initUI(self):
         # ICONS
@@ -37,11 +39,15 @@ class ExternalSortApp(QMainWindow):
         self.chunk_txt.setFixedHeight(60)
         self.chunk_txt.setText('128')
 
+        self.out_chunk_txt = QLineEdit()
+        self.out_chunk_txt.setFixedHeight(60)
+        self.out_chunk_txt.setText('128')
+
         self.sort_options_layout = QHBoxLayout()
-        self.sort_options_layout.addWidget(QLabel("Xếp theo thứ tự:"))
-        self.sort_options_layout.addWidget(self.rv, 1)
         self.sort_options_layout.addWidget(QLabel('Chunk size:'))
         self.sort_options_layout.addWidget(self.chunk_txt, 1)
+        self.sort_options_layout.addWidget(QLabel('Output buffer size:'))
+        self.sort_options_layout.addWidget(self.out_chunk_txt, 1)
         
         self.sort_options_widget = QWidget(self) 
         self.sort_options_widget.setLayout(self.sort_options_layout)
@@ -74,6 +80,8 @@ class ExternalSortApp(QMainWindow):
         self.layout = QVBoxLayout()
         self.layout.addWidget(self.title)
         self.layout.addWidget(self.select_file_button)
+        self.layout.addWidget(QLabel("Xếp theo thứ tự:"))
+        self.layout.addWidget(self.rv, 1)
         self.layout.addWidget(self.sort_options_widget)
         self.layout.addWidget(self.button_bottom_widget)
         self.layout.addWidget(self.progress_label)
@@ -116,12 +124,13 @@ class ExternalSortApp(QMainWindow):
             self.sort_button.setDisabled(True)
             self.progress_label.setText('Đang sắp xếp...')
             
-            self.sort_thread = SortThread(self, self.csv_file, 'sorted_output.csv', int(self.chunk_txt.text()), bool(int(self.rv.currentData())), int(self.sorting_column.currentData()))
+            self.start_time = time.time()
+            self.sort_thread = SortThread(self, self.csv_file, 'sorted_output.csv', int(self.chunk_txt.text()), bool(int(self.rv.currentData())), int(self.sorting_column.currentData()), int(self.out_chunk_txt.text()))
             self.sort_thread.done_signal.connect(self.sortDone)
             self.sort_thread.start()
         else:
             self.progress_label.setText('Vui lòng chọn tệp CSV trước.')
 
     def sortDone(self):
-        self.progress_label.setText('Đã sắp xếp và lưu tại: sorted_output.csv')
+        self.progress_label.setText(f'Đã sắp xếp và lưu tại: sorted_output.csv trong {round(time.time() - self.start_time, 2)} giây')
         self.sort_button.setDisabled(False)
