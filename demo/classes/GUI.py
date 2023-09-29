@@ -124,9 +124,9 @@ class ExternalSortApp(QMainWindow):
             self.sort_button.setDisabled(True)
             self.progress_label.setText('Đang sắp xếp...')
             
+            self.start_time = time.time()
             self.sort_thread = SortThread(self, self.csv_file, 'sorted_output.csv', int(self.chunk_txt.text()), bool(int(self.rv.currentData())), int(self.sorting_column.currentData()), int(self.out_chunk_txt.text()))
             self.sort_thread.done_signal.connect(self.sortDone)
-            self.start_time = time.time()
             self.sort_thread.start()
         else:
             self.progress_label.setText('Vui lòng chọn tệp CSV trước.')
