@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>External Sort</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+
+<body style="background-image: url(./images/bg.png)">
+    <div id="container" class="text-white">
+        <center>
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h1>External Sort</h1>
+                </div>
+                <div class="col-3"></div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <input type="file" class="form-control" id="fileInput" accept=".txt">
+                        <label class="input-group-text" for="fileInput">Upload</label>
+                    </div>
+                </div>
+                <div class="col-3"></div>
+            </div>
+            <div class="row mt-4">
+                <div class="col">
+                    <p>Input Data:
+                        <i class="fw-bold" id="input-demo"></i>
+                    </p>
+                </div>
+            </div>
+            <div class="row m-4">
+                <div class="col-2 align-items-center d-flex">
+                    <div class="input-group">
+                        <span class="input-group-text">Inp.B</span>
+                        <textarea class="form-control" id="inputBuffer" placeholder="Input Buffer"
+                            aria-label="Input buffer"></textarea>
+                    </div>
+                </div>
+                <div class="col-1"></div>
+                <div class="col-3">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="chunk1" placeholder="Chunk 1">
+                        <label for="chunk1">Chunk 1</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="chunk2" placeholder="Chunk 2">
+                        <label for="chunk2">Chunk 2</label>
+                    </div>
+                </div>
+                <div class="col-3">
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="output1" placeholder="S. Chunk 1">
+                        <label for="output1">S. Chunk 1</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="output2" placeholder="S. Chunk 2">
+                        <label for="output2">S. Chunk 2</label>
+                    </div>
+                </div>
+                <div class="col-1 align-items-center d-flex">
+                    <div class="col">
+                        <p>Heap:
+                            <i class="fw-bold" id="heap"></i>
+                        </p>
+                    </div>
+                </div>
+                <div class="col-2 align-items-center d-flex">
+                    <div class="input-group">
+                        <span class="input-group-text">Out.B</span>
+                        <textarea class="form-control" id="bufferOutput" placeholder="Output buffer"
+                            aria-label="Output buffer"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col">
+                    <p>Result:
+                        <i class="fw-bold" id="result"></i>
+                    </p>
+                </div>
+            </div>
+            <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                <button type="button" id="auto-btn" class="btn btn-primary">Auto</button>
+                <button type="button" id="sort-btn" class="btn btn-danger">Sort</button>
+                <button type="button" id="swap-btn" class="btn btn-warning">Swap</button>
+                <button type="button" id="outp-btn" class="btn btn-success">Output</button>
+            </div>
+        </center>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="./js/let_and_const.js"></script>
+    <script src="./js/utils.js"></script>
+    <script src="./js/external_sort.js"></script>
+    <script src="./js/handler.js"></script>
+    <script>
+        fileInput.addEventListener('change', handleFileUpload);
+
+        $("#auto-btn").click(function () {
+            autoExternalSort();
+        });
+
+        $("#sort-btn").click(function () {
+            externalSort();
+        });
+
+        $("#swap-btn").click(function () {
+            swap();
+        });
+
+        $("#outp-btn").click(function () {
+            output();
+        });
+    </script>
+</body>
+
+</html>
