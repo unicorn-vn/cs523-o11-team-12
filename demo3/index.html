@@ -62,7 +62,11 @@
                     </div>
                 </div>
                 <div class="col-1 align-items-center d-flex">
-                    <p id="heap"></p>
+                    <div class="col">
+                        <p>Heap:
+                            <i class="fw-bold" id="heap"></i>
+                        </p>
+                    </div>
                 </div>
                 <div class="col-2 align-items-center d-flex">
                     <div class="input-group">
@@ -80,6 +84,7 @@
                 </div>
             </div>
             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                <button type="button" id="auto-btn" class="btn btn-primary">Auto</button>
                 <button type="button" id="sort-btn" class="btn btn-danger">Sort</button>
                 <button type="button" id="swap-btn" class="btn btn-warning">Swap</button>
                 <button type="button" id="outp-btn" class="btn btn-success">Output</button>
@@ -97,6 +102,10 @@
     <script src="./js/handler.js"></script>
     <script>
         fileInput.addEventListener('change', handleFileUpload);
+
+        $("#auto-btn").click(function () {
+            autoExternalSort();
+        });
 
         $("#sort-btn").click(function () {
             externalSort();

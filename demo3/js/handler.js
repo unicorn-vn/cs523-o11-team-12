@@ -47,12 +47,21 @@ async function swap() {
     })
 }
 
+async function autoExternalSort() {
+    await externalSort();
+    while (output1.length > 1 || output2.length > 1) {
+        await swap();
+        await externalSort();
+    }
+    await output();
+}
+
 async function output() {
     temp_o1 = [...output1[0]];
     temp_o2 = [...output2[0]];
     while (temp_o1.length > 0 && temp_o2.length > 0) {
         $("#heap").html('<span id="heap1_' + temp_o1[0] + '">' + temp_o1[0] + '</span>' + ' <span id="heap2_' + temp_o2[0] + '">' + temp_o2[0] + '</span>');
-        await sleep(DELAY_STEP);
+        await sleep(DELAY_WRITE_BUFFER);
         if (temp_o1[0] <= temp_o2[0]) {
             await outputToBuffer(1, temp_o1);
         } else {
@@ -62,13 +71,13 @@ async function output() {
 
     while (temp_o1.length > 0) {
         $("#heap").html('<span id="heap1_' + temp_o1[0] + '">' + temp_o1[0] + '</span>');
-        await sleep(DELAY_STEP);
+        await sleep(DELAY_WRITE_BUFFER);
         await outputToBuffer(1, temp_o1);
     }
 
     while (temp_o2.length > 0) {
         $("#heap").html('<span id="heap2_' + temp_o2[0] + '">' + temp_o2[0] + '</span>');
-        await sleep(DELAY_STEP);
+        await sleep(DELAY_WRITE_BUFFER);
         await outputToBuffer(2, temp_o2);
     }
 

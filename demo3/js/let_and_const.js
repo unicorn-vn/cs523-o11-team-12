@@ -1,5 +1,8 @@
-const BUFFER_SIZE = 2;
-const DELAY_STEP = 100;
+const BUFFER_SIZE = 3;
+const DELAY_READ_INPUT = 1000;
+const DELAY_SORT = 500;
+const DELAY_WRITE_BUFFER = 500;
+const DELAY_OUTPUT = 1000;
 
 let inputBuffer = [];
 let chunk1 = [];
