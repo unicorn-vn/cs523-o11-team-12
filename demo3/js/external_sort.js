@@ -30,9 +30,11 @@ async function splitChunk() {
 
 async function chunkSortAnimation(id, c_arr, txtArea) {
     await activeChunkTxt(id);
+
     let temp = [...(c_arr[0] || [])];
     let temp2 = [...(c_arr[1] || [])];
     let out_t = merge(temp, temp2);
+
     if (id == 1) {
         output1.push(out_t);
         chunk1 = chunk1.slice(2);
@@ -41,8 +43,10 @@ async function chunkSortAnimation(id, c_arr, txtArea) {
         chunk2 = chunk2.slice(2);
     }
     await sleep(DELAY_STEP / 2);
+
     txtArea.value += '[' + out_t.join(' ') + '] ';
     await sleep(DELAY_STEP / 2);
+
     await inactiveChunkTxt(id);
 }
 
@@ -56,9 +60,11 @@ async function fromBufferToResult() {
 async function outputToBuffer(id, temp_o) {
     $("#heap" + id + "_" + temp_o[0]).css('background-color', 'red');
     await sleep(DELAY_STEP);
+
     outputBuffer.push(temp_o[0]);
     $("#bufferOutput").val(outputBuffer.join(' '));
     await sleep(DELAY_STEP);
+
     if (outputBuffer.length >= 2)
         await fromBufferToResult();
     $("#heap" + id + "_" + temp_o[0]).remove();
