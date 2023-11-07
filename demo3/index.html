@@ -102,6 +102,8 @@
         let output2 = [];
         let outputBuffer = [];
         let final_output = [];
+        let temp_o1 = [];
+        let temp_o2 = [];
 
         const fileInput = document.getElementById('fileInput');
         const inputBufferTextArea = document.getElementById('inputBuffer');
@@ -109,8 +111,6 @@
         const chunk2TextArea = document.getElementById('chunk2');
         const output1TextArea = document.getElementById('output1');
         const output2TextArea = document.getElementById('output2');
-        const bufferOutputTextArea = document.getElementById('bufferOutput');
-        const resultElement = document.getElementById('result');
 
         fileInput.addEventListener('change', handleFileUpload);
 
@@ -157,59 +157,53 @@
                 $("#inp_" + (p_chnk * BUFFER_SIZE)).css('background-color', 'red');
                 $("#inp_" + (p_chnk * BUFFER_SIZE + 1)).css('background-color', 'red');
                 p_chnk++;
-                // output1TextArea.value = output1.join(' ');
-                // output2TextArea.value = output2.join(' ');
-                // bufferOutputTextArea.value = bufferOutput.join(' ');
-                // resultElement.textContent = result.join(' ');
             }
             inputBufferTextArea.value = ''
         }
 
         function merge(arr1, arr2) {
-            // Merge the arrays using the concat() method
             const mergedArray = arr1.concat(arr2);
-
-            // Sort the merged array using the sort() method (ascending order)
             return mergedArray.sort((a, b) => a - b);
         }
 
-        async function externalSort() {
+        function activeChunkTxt(id) {
+            $("#chunk" + id).css('background-color', 'red');
+            $("#output" + id).css('background-color', 'orange');
+        }
+        function inactiveChunkTxt(id) {
+            $("#chunk" + id).css('background-color', 'transparent');
+            $("#output" + id).css('background-color', 'transparent');
+        }
+        async function chunkSortAnimation(id, c_arr, txtArea) {
+            await activeChunkTxt(id);
+            let temp = [...(c_arr[0] || [])];
+            let temp2 = [...(c_arr[1] || [])];
+            let out_t = merge(temp, temp2);
+            if (id == 1) {
+                output1.push(out_t);
+                chunk1 = chunk1.slice(2);
+            } else {
+                output2.push(out_t);
+                chunk2 = chunk2.slice(2);
+            }
+            await sleep(DELAY_STEP / 2);
+            txtArea.value += '[' + out_t.join(' ') + '] ';
+            await sleep(DELAY_STEP / 2);
+            await inactiveChunkTxt(id);
+        }
 
+        async function externalSort() {
             while (chunk1.length || chunk2.length) {
                 if (chunk1.length) {
-                    $("#chunk1").css('background-color', 'red');
-                    $("#output1").css('background-color', 'orange');
-                    let temp = [...(chunk1[0] || [])];
-                    let temp2 = [...(chunk1[1] || [])];
-                    let out_t = merge(temp, temp2);
-                    output1.push(out_t);
-                    chunk1 = chunk1.slice(2);
-                    await sleep(DELAY_STEP / 2);
-                    output1TextArea.value += '[' + out_t.join(' ') + '] ';
-                    await sleep(DELAY_STEP / 2);
-                    $("#chunk1").css('background-color', 'transparent');
-                    $("#output1").css('background-color', 'transparent');
+                    await chunkSortAnimation(1, chunk1, output1TextArea);
                 }
 
                 if (chunk2.length) {
-                    $("#chunk2").css('background-color', 'red');
-                    $("#output2").css('background-color', 'orange');
-                    let temp = [...(chunk2[0] || [])];
-                    let temp2 = [...(chunk2[1] || [])];
-                    let out_t = merge(temp, temp2);
-                    output2.push(out_t);
-                    chunk2 = chunk2.slice(2);
-                    await sleep(DELAY_STEP / 2);
-                    output2TextArea.value += '[' + out_t.join(' ') + '] ';
-                    await sleep(DELAY_STEP / 2);
-                    $("#chunk2").css('background-color', 'transparent');
-                    $("#output2").css('background-color', 'transparent');
+                    await chunkSortAnimation(2, chunk2, output2TextArea);
                 }
             }
-            $("#chunk1").css('background-color', 'transparent');
-            $("#output1").css('background-color', 'transparent');
-            $("#chunk2").css('background-color', 'transparent');
-            $("#output2").css('background-color', 'transparent');
+            inactiveChunkTxt(1);
+            inactiveChunkTxt(2);
         }
 
         async function swap() {
@@ -217,10 +211,12 @@
             chunk2 = [...output2];
             output1 = [];
             output2 = [];
+
             output1TextArea.value = '';
             output2TextArea.value = '';
             chunk1TextArea.value = '';
             chunk2TextArea.value = '';
+
             chunk1.forEach((element, index) => {
                 chunk1TextArea.value += '[' + element.join(' ') + '] ';
             })
@@ -230,87 +226,56 @@
             })
         }
 
+        async function fromBufferToResult() {
+            final_output = [...final_output, ...outputBuffer];
+            $("#result").html('<span>' + final_output.join(' ') + '</span>');
+            outputBuffer = [];
+            $("#bufferOutput").val('');
+        }
+
+        async function outputToBuffer(id, temp_o) {
+            $("#heap" + id + "_" + temp_o[0]).css('background-color', 'red');
+            await sleep(DELAY_STEP);
+            outputBuffer.push(temp_o[0]);
+            $("#bufferOutput").val(outputBuffer.join(' '));
+            await sleep(DELAY_STEP);
+            if (outputBuffer.length >= 2)
+                await fromBufferToResult();
+            $("#heap" + id + "_" + temp_o[0]).remove();
+            if (id == 1)
+                temp_o1 = temp_o1.slice(1);
+            else
+                temp_o2 = temp_o2.slice(1);
+            await sleep(DELAY_STEP);
+        }
+
         async function output() {
-            let temp_o1 = [...output1[0]];
-            let temp_o2 = [...output2[0]];
+            temp_o1 = [...output1[0]];
+            temp_o2 = [...output2[0]];
             while (temp_o1.length > 0 && temp_o2.length > 0) {
                 $("#heap").html('<span id="heap1_' + temp_o1[0] + '">' + temp_o1[0] + '</span>' + ' <span id="heap2_' + temp_o2[0] + '">' + temp_o2[0] + '</span>');
                 await sleep(DELAY_STEP);
                 if (temp_o1[0] <= temp_o2[0]) {
-                    $("#heap1_" + temp_o1[0]).css('background-color', 'red');
-                    await sleep(DELAY_STEP);
-                    outputBuffer.push(temp_o1[0]);
-                    $("#bufferOutput").val(outputBuffer.join(' '));
-                    await sleep(DELAY_STEP);
-                    if (outputBuffer.length >= 2) {
-                        final_output = [...final_output, ...outputBuffer];
-                        $("#result").html('<span>' + final_output.join(' ') + '</span>');
-                        outputBuffer = [];
-                        $("#bufferOutput").val('');
-                    }
-                    $("#heap1_" + temp_o1[0]).remove();
-                    temp_o1 = temp_o1.slice(1);
-                    await sleep(DELAY_STEP);
+                    await outputToBuffer(1, temp_o1);
                 } else {
-                    $("#heap2_" + temp_o2[0]).css('background-color', 'red');
-                    await sleep(DELAY_STEP);
-                    outputBuffer.push(temp_o2[0]); $("#bufferOutput").val(outputBuffer.join(' '));
-                    await sleep(DELAY_STEP);
-                    if (outputBuffer.length >= 2) {
-                        final_output = [...final_output, ...outputBuffer];
-                        $("#result").html('<span>' + final_output.join(' ') + '</span>');
-                        outputBuffer = [];
-                        $("#bufferOutput").val('');
-                    }
-                    $("#heap2_" + temp_o2[0]).remove();
-                    temp_o2 = temp_o2.slice(1);
-                    await sleep(DELAY_STEP);
+                    await outputToBuffer(2, temp_o2);
                 }
             }
 
             while (temp_o1.length > 0) {
                 $("#heap").html('<span id="heap1_' + temp_o1[0] + '">' + temp_o1[0] + '</span>');
                 await sleep(DELAY_STEP);
-                $("#heap1_" + temp_o1[0]).css('background-color', 'red');
-                await sleep(DELAY_STEP);
-                outputBuffer.push(temp_o1[0]);
-                $("#bufferOutput").val(outputBuffer.join(' '));
-                await sleep(DELAY_STEP);
-                if (outputBuffer.length >= 2) {
-                    final_output = [...final_output, ...outputBuffer];
-                    $("#result").html('<span>' + final_output.join(' ') + '</span>');
-                    outputBuffer = [];
-                    $("#bufferOutput").val('');
-                }
-                $("#heap1_" + temp_o1[0]).remove();
-                temp_o1 = temp_o1.slice(1);
-                await sleep(DELAY_STEP);
+                await outputToBuffer(1, temp_o1);
             }
 
             while (temp_o2.length > 0) {
                 $("#heap").html('<span id="heap2_' + temp_o2[0] + '">' + temp_o2[0] + '</span>');
                 await sleep(DELAY_STEP);
-                $("#heap2_" + temp_o2[0]).css('background-color', 'red');
-                await sleep(DELAY_STEP);
-                outputBuffer.push(temp_o2[0]);
-                $("#bufferOutput").val(outputBuffer.join(' '));
-                await sleep(DELAY_STEP);
-                if (outputBuffer.length >= 2) {
-                    final_output = [...final_output, ...outputBuffer];
-                    $("#result").html('<span>' + final_output.join(' ') + '</span>');
-                    outputBuffer = [];
-                    $("#bufferOutput").val('');
-                }
-                $("#heap2_" + temp_o2[0]).remove();
-                temp_o2 = temp_o2.slice(1);
-                await sleep(DELAY_STEP);
+                await outputToBuffer(2, temp_o2);
             }
 
             if (outputBuffer.length > 0) {
-                final_output = [...final_output, ...outputBuffer];
-                $("#result").html('<span>' + final_output.join(' ') + '</span>');
-                outputBuffer = [];
-                $("#bufferOutput").val('');
+                await fromBufferToResult();
             }
         }
 
