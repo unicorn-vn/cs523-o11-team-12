@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>External Sort</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+
+<body>
+    <div id="container">
+        <center>
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h1>External Sort</h1>
+                </div>
+                <div class="col-3"></div>
+                <div class="col">
+                    <div class="input-group mb-3">
+                        <input type="file" class="form-control" id="fileInput" accept=".txt">
+                        <label class="input-group-text" for="fileInput">Upload</label>
+                    </div>
+                </div>
+                <div class="col-3"></div>
+            </div>
+            <div class="row mt-4">
+                <div class="col">
+                    <p>Input Data:
+                        <i class="fw-bold" id="input-demo"></i>
+                    </p>
+                </div>
+            </div>
+            <div class="row m-4">
+                <div class="col-2 align-items-center d-flex">
+                    <div class="input-group">
+                        <span class="input-group-text">Inp.B</span>
+                        <textarea class="form-control" id="inputBuffer" placeholder="Input Buffer"
+                            aria-label="Input buffer"></textarea>
+                    </div>
+                </div>
+                <div class="col-1"></div>
+                <div class="col-3">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="chunk1" placeholder="Chunk 1">
+                        <label for="chunk1">Chunk 1</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="chunk2" placeholder="Chunk 2">
+                        <label for="chunk2">Chunk 2</label>
+                    </div>
+                </div>
+                <div class="col-3">
+
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="output1" placeholder="S. Chunk 1">
+                        <label for="output1">S. Chunk 1</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="output2" placeholder="S. Chunk 2">
+                        <label for="output2">S. Chunk 2</label>
+                    </div>
+                </div>
+                <div class="col-1 align-items-center d-flex">
+                    <p id="heap"></p>
+                </div>
+                <div class="col-2 align-items-center d-flex">
+                    <div class="input-group">
+                        <span class="input-group-text">Out.B</span>
+                        <textarea class="form-control" id="bufferOutput" placeholder="Output buffer"
+                            aria-label="Output buffer"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col">
+                    <p>Result:
+                        <i class="fw-bold" id="result"></i>
+                    </p>
+                </div>
+            </div>
+            <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                <button type="button" id="sort-btn" class="btn btn-danger">Sort</button>
+                <button type="button" id="swap-btn" class="btn btn-warning">Swap</button>
+                <button type="button" id="outp-btn" class="btn btn-success">Output</button>
+            </div>
+        </center>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script>
+        const BUFFER_SIZE = 2;
+        const DELAY_STEP = 100;
+
+        let inputBuffer = [];
+        let chunk1 = [];
+        let chunk2 = [];
+        let output1 = [];
+        let output2 = [];
+        let outputBuffer = [];
+        let final_output = [];
+
+        const fileInput = document.getElementById('fileInput');
+        const inputBufferTextArea = document.getElementById('inputBuffer');
+        const chunk1TextArea = document.getElementById('chunk1');
+        const chunk2TextArea = document.getElementById('chunk2');
+        const output1TextArea = document.getElementById('output1');
+        const output2TextArea = document.getElementById('output2');
+        const bufferOutputTextArea = document.getElementById('bufferOutput');
+        const resultElement = document.getElementById('result');
+
+        fileInput.addEventListener('change', handleFileUpload);
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const text = e.target.result;
+                const numbers = text.trim().split(/\s+/);
+
+                inputBuffer = numbers.map(n => parseInt(n, 10));
+                splitChunk();
+            };
+
+            reader.readAsText(file);
+        }
+
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        async function splitChunk() {
+            let chunkNow = 1;
+            let p_chnk = 0;
+            inputBuffer.forEach((element, index) => {
+                $("#input-demo").append("<span class='num_inp' id='inp_" + index + "'>" + element + ' </span>');
+            });
+            while (inputBuffer.length) {
+                let output1 = inputBuffer.slice(0, BUFFER_SIZE);
+                inputBuffer = inputBuffer.slice(BUFFER_SIZE);
+                await sleep(DELAY_STEP);
+                // Update the text areas with the sorted data
+                inputBufferTextArea.value = output1.join(' ');
+                if (chunkNow == 1) {
+                    chunk1TextArea.value += '[' + output1.join(' ') + '] ';
+                    chunk1.push(output1);
+                    chunkNow = 2;
+                } else {
+                    chunk2TextArea.value += '[' + output1.join(' ') + '] ';
+                    chunk2.push(output1);
+                    chunkNow = 1;
+                }
+
+                $('.num_inp').css('background-color', 'transparent');
+                $("#inp_" + (p_chnk * BUFFER_SIZE)).css('background-color', 'red');
+                $("#inp_" + (p_chnk * BUFFER_SIZE + 1)).css('background-color', 'red');
+                p_chnk++;
+                // output1TextArea.value = output1.join(' ');
+                // output2TextArea.value = output2.join(' ');
+                // bufferOutputTextArea.value = bufferOutput.join(' ');
+                // resultElement.textContent = result.join(' ');
+            }
+            inputBufferTextArea.value = ''
+        }
+
+        function merge(arr1, arr2) {
+            // Merge the arrays using the concat() method
+            const mergedArray = arr1.concat(arr2);
+
+            // Sort the merged array using the sort() method (ascending order)
+            return mergedArray.sort((a, b) => a - b);
+        }
+
+        async function externalSort() {
+
+            while (chunk1.length || chunk2.length) {
+                if (chunk1.length) {
+                    $("#chunk1").css('background-color', 'red');
+                    $("#output1").css('background-color', 'orange');
+                    let temp = [...(chunk1[0] || [])];
+                    let temp2 = [...(chunk1[1] || [])];
+                    let out_t = merge(temp, temp2);
+                    output1.push(out_t);
+                    chunk1 = chunk1.slice(2);
+                    await sleep(DELAY_STEP / 2);
+                    output1TextArea.value += '[' + out_t.join(' ') + '] ';
+                    await sleep(DELAY_STEP / 2);
+                    $("#chunk1").css('background-color', 'transparent');
+                    $("#output1").css('background-color', 'transparent');
+                }
+
+                if (chunk2.length) {
+                    $("#chunk2").css('background-color', 'red');
+                    $("#output2").css('background-color', 'orange');
+                    let temp = [...(chunk2[0] || [])];
+                    let temp2 = [...(chunk2[1] || [])];
+                    let out_t = merge(temp, temp2);
+                    output2.push(out_t);
+                    chunk2 = chunk2.slice(2);
+                    await sleep(DELAY_STEP / 2);
+                    output2TextArea.value += '[' + out_t.join(' ') + '] ';
+                    await sleep(DELAY_STEP / 2);
+                    $("#chunk2").css('background-color', 'transparent');
+                    $("#output2").css('background-color', 'transparent');
+                }
+            }
+            $("#chunk1").css('background-color', 'transparent');
+            $("#output1").css('background-color', 'transparent');
+            $("#chunk2").css('background-color', 'transparent');
+            $("#output2").css('background-color', 'transparent');
+        }
+
+        async function swap() {
+            chunk1 = [...output1];
+            chunk2 = [...output2];
+            output1 = [];
+            output2 = [];
+            output1TextArea.value = '';
+            output2TextArea.value = '';
+            chunk1TextArea.value = '';
+            chunk2TextArea.value = '';
+            chunk1.forEach((element, index) => {
+                chunk1TextArea.value += '[' + element.join(' ') + '] ';
+            })
+
+            chunk2.forEach((element, index) => {
+                chunk2TextArea.value += '[' + element.join(' ') + '] ';
+            })
+        }
+
+        async function output() {
+            let temp_o1 = [...output1[0]];
+            let temp_o2 = [...output2[0]];
+            while (temp_o1.length > 0 && temp_o2.length > 0) {
+                $("#heap").html('<span id="heap1_' + temp_o1[0] + '">' + temp_o1[0] + '</span>' + ' <span id="heap2_' + temp_o2[0] + '">' + temp_o2[0] + '</span>');
+                await sleep(DELAY_STEP);
+                if (temp_o1[0] <= temp_o2[0]) {
+                    $("#heap1_" + temp_o1[0]).css('background-color', 'red');
+                    await sleep(DELAY_STEP);
+                    outputBuffer.push(temp_o1[0]);
+                    $("#bufferOutput").val(outputBuffer.join(' '));
+                    await sleep(DELAY_STEP);
+                    if (outputBuffer.length >= 2) {
+                        final_output = [...final_output, ...outputBuffer];
+                        $("#result").html('<span>' + final_output.join(' ') + '</span>');
+                        outputBuffer = [];
+                        $("#bufferOutput").val('');
+                    }
+                    $("#heap1_" + temp_o1[0]).remove();
+                    temp_o1 = temp_o1.slice(1);
+                    await sleep(DELAY_STEP);
+                } else {
+                    $("#heap2_" + temp_o2[0]).css('background-color', 'red');
+                    await sleep(DELAY_STEP);
+                    outputBuffer.push(temp_o2[0]); $("#bufferOutput").val(outputBuffer.join(' '));
+                    await sleep(DELAY_STEP);
+                    if (outputBuffer.length >= 2) {
+                        final_output = [...final_output, ...outputBuffer];
+                        $("#result").html('<span>' + final_output.join(' ') + '</span>');
+                        outputBuffer = [];
+                        $("#bufferOutput").val('');
+                    }
+                    $("#heap2_" + temp_o2[0]).remove();
+                    temp_o2 = temp_o2.slice(1);
+                    await sleep(DELAY_STEP);
+                }
+            }
+
+            while (temp_o1.length > 0) {
+                $("#heap").html('<span id="heap1_' + temp_o1[0] + '">' + temp_o1[0] + '</span>');
+                await sleep(DELAY_STEP);
+                $("#heap1_" + temp_o1[0]).css('background-color', 'red');
+                await sleep(DELAY_STEP);
+                outputBuffer.push(temp_o1[0]);
+                $("#bufferOutput").val(outputBuffer.join(' '));
+                await sleep(DELAY_STEP);
+                if (outputBuffer.length >= 2) {
+                    final_output = [...final_output, ...outputBuffer];
+                    $("#result").html('<span>' + final_output.join(' ') + '</span>');
+                    outputBuffer = [];
+                    $("#bufferOutput").val('');
+                }
+                $("#heap1_" + temp_o1[0]).remove();
+                temp_o1 = temp_o1.slice(1);
+                await sleep(DELAY_STEP);
+            }
+
+            while (temp_o2.length > 0) {
+                $("#heap").html('<span id="heap2_' + temp_o2[0] + '">' + temp_o2[0] + '</span>');
+                await sleep(DELAY_STEP);
+                $("#heap2_" + temp_o2[0]).css('background-color', 'red');
+                await sleep(DELAY_STEP);
+                outputBuffer.push(temp_o2[0]);
+                $("#bufferOutput").val(outputBuffer.join(' '));
+                await sleep(DELAY_STEP);
+                if (outputBuffer.length >= 2) {
+                    final_output = [...final_output, ...outputBuffer];
+                    $("#result").html('<span>' + final_output.join(' ') + '</span>');
+                    outputBuffer = [];
+                    $("#bufferOutput").val('');
+                }
+                $("#heap2_" + temp_o2[0]).remove();
+                temp_o2 = temp_o2.slice(1);
+                await sleep(DELAY_STEP);
+            }
+
+            if (outputBuffer.length > 0) {
+                final_output = [...final_output, ...outputBuffer];
+                $("#result").html('<span>' + final_output.join(' ') + '</span>');
+                outputBuffer = [];
+                $("#bufferOutput").val('');
+            }
+        }
+
+        $("#sort-btn").click(function () {
+            externalSort();
+        });
+
+        $("#swap-btn").click(function () {
+            swap();
+        });
+
+        $("#outp-btn").click(function () {
+            output();
+        });
+    </script>
+</body>
+
+</html>
